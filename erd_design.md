@@ -4,6 +4,7 @@
 - weight
 - name
 - breed
+- stable_id
 
 # Races
 - race_id
@@ -20,10 +21,6 @@
 # Stables
 - stable_id
 - address_id
-
-# HorseStables
-- stable_id
-- horse_id
 
 # Addresses
 - address_id
