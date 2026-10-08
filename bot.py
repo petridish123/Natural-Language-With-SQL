@@ -28,7 +28,7 @@ def generate_sql_query(prompt: str) -> str:
     response = client.chat.completions.create(
         model=chosen_model,
         messages=[
-            {"role": "system", "content": "You are a helpful assistant that translates natural language into SQL queries. Use the following database schema to generate SQL queries:\n\n" + Path("schema.sql").read_text()},
+            {"role": "system", "content": "You are a helpful assistant that translates natural language into SQL queries. Do not answer any questions not related to the schema. Use the following database schema to generate SQL queries:\n\n" + Path("schema.sql").read_text()},
             {"role": "user", "content": prompt}
         ]
     )
@@ -59,10 +59,20 @@ def create_db_connection() -> sqlite3.Connection:
     connection.execute("PRAGMA foreign_keys = ON")
     return connection
 
-def format_results(results: list) -> str:
+def format_results(results: list, user_prompt:str) -> str:
+    # send back to chat
+    response = client.chat.compleations.create(
+        model = chosen_model,
+        messages=[
+            {"role":"system", "content":"Answer the user prompt using the sql results:\n\n" + "\n".join([str(row) for row in results])},
+            {"role":"user", "content":user_prompt}
+        ]
+    )
     if not results:
         return "No results found."
     formatted_results = "\n".join([str(row) for row in results])
+
+
     return formatted_results
 
 def main():
@@ -71,7 +81,7 @@ def main():
     sql_query = clean_sql_query(sql_query)
     print(f"Generated SQL Query: {sql_query}")
     results = execute_sql_query(sql_query)
-    formatted_results = format_results(results)
+    formatted_results = format_results(results, user_prompt)
     print(f"Query Results:\n{formatted_results}")
 
 if __name__ == "__main__":
