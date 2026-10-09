@@ -61,25 +61,26 @@ def create_db_connection() -> sqlite3.Connection:
 
 def format_results(results: list, user_prompt:str) -> str:
     # send back to chat
-    response = client.chat.compleations.create(
-        model = chosen_model,
-        messages=[
-            {"role":"system", "content":"Answer the user prompt using the sql results:\n\n" + "\n".join([str(row) for row in results])},
-            {"role":"user", "content":user_prompt}
-        ]
-    )
     if not results:
         return "No results found."
     formatted_results = "\n".join([str(row) for row in results])
 
+    response = client.chat.completions.create(
+        model = chosen_model,
+        messages=[
+            {"role":"system", "content":"Answer the user prompt using the sql results:\n\n" + formatted_results},
+            {"role":"user", "content":user_prompt}
+        ]
+    )
+    return response.choices[0].message.content.strip()
 
-    return formatted_results
+    # return response
 
 def main():
     user_prompt = input("Enter your query in natural language: ")
     sql_query = generate_sql_query(user_prompt)
     sql_query = clean_sql_query(sql_query)
-    print(f"Generated SQL Query: {sql_query}")
+    # print(f"Generated SQL Query: {sql_query}")
     results = execute_sql_query(sql_query)
     formatted_results = format_results(results, user_prompt)
     print(f"Query Results:\n{formatted_results}")
