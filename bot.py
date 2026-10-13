@@ -80,7 +80,7 @@ def main():
     user_prompt = input("Enter your query in natural language: ")
     sql_query = generate_sql_query(user_prompt)
     sql_query = clean_sql_query(sql_query)
-    # print(f"Generated SQL Query: {sql_query}")
+    print(f"Generated SQL Query: {sql_query}")
     results = execute_sql_query(sql_query)
     formatted_results = format_results(results, user_prompt)
     print(f"Query Results:\n{formatted_results}")

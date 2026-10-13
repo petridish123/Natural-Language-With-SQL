@@ -1,0 +1,100 @@
+Example 1:
+Enter your query in natural language: what is the horse with the most wins
+Generated SQL Query: SELECT h.name, COUNT(*) AS wins
+FROM Horses h
+JOIN Races r ON h.horse_id = r.first_place
+GROUP BY h.horse_id, h.name
+ORDER BY wins DESC
+LIMIT 1;
+Query Results:
+The horse with the most wins is 'Thunder' with 3 wins.
+
+Example 2:
+Enter your query in natural language: List all horses
+Generated SQL Query: SELECT horse_id, height, weight, name, breed, stable_id FROM Horses;
+Query Results:
+Here are the details of all the horses:
+
+1. Name: Thunder, Breed: Arabian, Height: 15.2, Weight: 950.0
+2. Name: Storm, Breed: Thoroughbred, Height: 16.0, Weight: 1100.0
+3. Name: Blaze, Breed: Quarter Horse, Height: 15.5, Weight: 1000.0
+4. Name: Lightning, Breed: Morgan, Height: 16.1, Weight: 1150.0
+5. Name: Comet, Breed: Arabian, Height: 14.8, Weight: 900.0
+6. Name: Midnight, Breed: Thoroughbred, Height: 15.9, Weight: 1080.0
+7. Name: Rocket, Breed: Quarter Horse, Height: 16.2, Weight: 1180.0
+8. Name: Daisy, Breed: Morgan, Height: 15.3, Weight: 980.0
+9. Name: Spirit, Breed: Arabian, Height: 15.7, Weight: 1040.0
+10. Name: Champion, Breed: Thoroughbred, Height: 16.3, Weight: 1200.0
+11. Name: Willow, Breed: Quarter Horse, Height: 15.1, Weight: 930.0
+12. Name: Ranger, Breed: Morgan, Height: 16.0, Weight: 1120.0
+13. Name: Star, Breed: Arabian, Height: 15.4, Weight: 990.0
+14. Name: Majesty, Breed: Thoroughbred, Height: 16.4, Weight: 1220.0
+15. Name: Dusty, Breed: Quarter Horse, Height: 15.8, Weight: 1060.0
+16. Name: Copper, Breed: Morgan, Height: 16.1, Weight: 1160.0
+17. Name: Goldie, Breed: Arabian, Height: 15.0, Weight: 920.0
+18. Name: King, Breed: Thoroughbred, Height: 16.2, Weight: 1170.0
+19. Name: Sundance, Breed: Quarter Horse, Height: 15.6, Weight: 1020.0
+20. Name: Pearl, Breed: Morgan, Height: 16.3, Weight: 1190.0
+
+Example 3:
+Enter your query in natural language: Can you list the top 3 win ratios?
+Generated SQL Query: WITH RaceCounts AS (
+    SELECT hr.horse_id, COUNT(hr.race_id) AS total_races
+    FROM HorseRaces hr
+    GROUP BY hr.horse_id
+),
+WinCounts AS (
+    SELECT r.first_place AS horse_id, COUNT(*) AS wins
+    FROM Races r
+    WHERE r.first_place IS NOT NULL
+    GROUP BY r.first_place
+)
+SELECT h.name, COALESCE(wc.wins, 0) * 1.0 / rc.total_races AS win_ratio
+FROM Horses h
+JOIN RaceCounts rc ON h.horse_id = rc.horse_id
+LEFT JOIN WinCounts wc ON h.horse_id = wc.horse_id
+ORDER BY win_ratio DESC
+LIMIT 3;
+Query Results:
+The top 3 win ratios are:
+1. Thunder with a win ratio of 1.0
+2. Lightning with a win ratio of 0.75
+3. Storm with a win ratio of 0.5
+
+Example 4:
+Enter your query in natural language: What is the most commonly used racetrack?
+Generated SQL Query: SELECT a.street_name, a.city, a.state, a.zip, COUNT(r.race_id) as race_count
+FROM Races r
+JOIN Addresses a ON r.address_id = a.address_id
+GROUP BY r.address_id
+ORDER BY race_count DESC
+LIMIT 1;
+Query Results:
+The most commonly used racetrack is located at '50 Raceway Drive', Arvada, CO, 80003.
+
+Example 5:
+Enter your query in natural language: What is the race that had the most horses. If there is a tie, display all of them.
+Generated SQL Query: SELECT r.race_id, r.race_date, r.address_id
+FROM Races r
+JOIN (
+    SELECT race_id, COUNT(horse_id) as num_horses
+    FROM HorseRaces
+    GROUP BY race_id
+) hr ON r.race_id = hr.race_id
+WHERE hr.num_horses = (
+    SELECT MAX(horse_count) 
+    FROM (
+        SELECT race_id, COUNT(horse_id) as horse_count 
+        FROM HorseRaces 
+        GROUP BY race_id
+    ) count_table
+);
+Query Results:
+There is no tie; the race with the most horses is the one on March 14, 2026, which had 15 horses.
+
+Example 6:
+Enter your query in natural language: When was the most recent race?
+Generated SQL Query: SELECT MAX(race_date) AS most_recent_race_date
+FROM Races;
+Query Results:
+The most recent race was on April 18, 2026.
